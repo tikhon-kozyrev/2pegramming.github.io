@@ -6,9 +6,9 @@ highlighter:      pygments
 permalink:        /:title/.
 
 # Setup
-title:            2pe.site
+title:            ''
 tagline:          'A Jekyll theme'
-description:      'Официальный сайт <a href="https://t.me/pepegramming" target="_blank">2pegramming</a>.'
+description:      '<a href="https://t.me/pepegramming" target="_blank">2pegramming</a>'
 url:              http://pepegramming.site
 baseurl:          /
 
