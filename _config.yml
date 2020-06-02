@@ -1,0 +1,24 @@
+# Dependencies
+markdown:         redcarpet
+highlighter:      pygments
+
+# Permalinks
+permalink:        /:title/.
+
+# Setup
+title:            2pe.site
+tagline:          'A Jekyll theme'
+description:      'Официальный сайт <a href="https://t.me/pepegramming" target="_blank">2pegramming</a>.'
+url:              http://pepegramming.site
+baseurl:          /
+
+author:
+  name:           'Anton Davydov'
+  url:            https://twitter.com/mdo
+
+
+# Custom vars
+version:          2.1.0
+
+github:
+  repo:           http://github.com/2pegramming
