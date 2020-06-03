@@ -4,7 +4,7 @@
  <title></title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2020-06-02T20:32:09+03:00</updated>
+ <updated>2020-06-04T00:22:19+03:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Anton Davydov</name>
@@ -13,46 +13,49 @@
 
  
  <entry>
-   <title>Introducing Hyde</title>
-   <link href="http://localhost:4000/introducing-hyde/."/>
-   <updated>2013-12-28T00:00:00+04:00</updated>
-   <id>http://localhost:4000/introducing-hyde/introducing-hyde</id>
-   <content type="html">&lt;p&gt;Hyde is a brazen two-column &lt;a href=&quot;http://jekyllrb.com&quot;&gt;Jekyll&lt;/a&gt; theme that pairs a prominent sidebar with uncomplicated content. It’s based on &lt;a href=&quot;http://getpoole.com&quot;&gt;Poole&lt;/a&gt;, the Jekyll butler.&lt;/p&gt;
+   <title>Ретроспектива: ecommerce</title>
+   <link href="http://localhost:4000/retrospection-ecommerce/."/>
+   <updated>2020-06-03T00:00:00+03:00</updated>
+   <id>http://localhost:4000/retrospection-ecommerce/retrospection-ecommerce</id>
+   <content type="html">&lt;p&gt;Год назад я ушел из healthcare стартапа, который являлся ecommerce для лекарств в штатах. Сразу после ухода я написал черновик с советами самому себе о том, что стоит делать сразу, а на что обратить внимание.&lt;/p&gt;
 
-&lt;h3 id=&quot;built-on-poole&quot;&gt;Built on Poole&lt;/h3&gt;
+&lt;p&gt;Черновик забылся на год, но, найдя записи в блокноте, выложил в паблик как ретроспективу основанную на опыте и боли. Каждый пункт -  субъективный опыт и не претендуют на единственно верное решение. Если у вас есть похожие советы связанные с ecommerce - пишите комментарии, хочется собрать целый список. В будущем, можно будет сделать подобные списки и для других видов проектов.&lt;/p&gt;
 
-&lt;p&gt;Poole is the Jekyll Butler, serving as an upstanding and effective foundation for Jekyll themes by &lt;a href=&quot;https://twitter.com/mdo&quot;&gt;@mdo&lt;/a&gt;. Poole, and every theme built on it (like Hyde here) includes the following:&lt;/p&gt;
-
+&lt;h2 id=&quot;ордер-и-цены&quot;&gt;Ордер и цены&lt;/h2&gt;
 &lt;ul&gt;
-  &lt;li&gt;Complete Jekyll setup included (layouts, config, &lt;a href=&quot;/404&quot;&gt;404&lt;/a&gt;, &lt;a href=&quot;/atom.xml&quot;&gt;RSS feed&lt;/a&gt;, posts, and &lt;a href=&quot;/about&quot;&gt;example page&lt;/a&gt;)&lt;/li&gt;
-  &lt;li&gt;Mobile friendly design and development&lt;/li&gt;
-  &lt;li&gt;Easily scalable text and component sizing with &lt;code&gt;rem&lt;/code&gt; units in the CSS&lt;/li&gt;
-  &lt;li&gt;Support for a wide gamut of HTML elements&lt;/li&gt;
-  &lt;li&gt;Related posts (time-based, because Jekyll) below each post&lt;/li&gt;
-  &lt;li&gt;Syntax highlighting, courtesy Pygments (the Python-based code snippet highlighter)&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;Cart&lt;/code&gt; - частный случай &lt;code&gt;order&lt;/code&gt;. Вместо двух сущностей можно взять &lt;code&gt;order&lt;/code&gt;  со статусом &lt;code&gt;created&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;Купоны появятся. Делать купон отдельной сущностью - усложняет логику и добавит условий в чекаут и рефанд логику. Сегодня, если нужно будет делать добавить купоны в систему - сделаю купон отдельным айтемом с отрицательной ценой (скидкой).&lt;/li&gt;
+  &lt;li&gt;В &lt;code&gt;order_items&lt;/code&gt; линковался на &lt;code&gt;item&lt;/code&gt; и &lt;code&gt;price&lt;/code&gt; из базы. Также, аналитики постоянно меняли цены на товары. Такая ситуация привела к мутациям ордера и было тяжело сказать, что и сколько стоило для ордера годичной давности. А пользователь получал не предсказуемый UX, так как возникала гипотетическая ситуация, что в момент чекаута цена на товар меняется и пользователь заплатит больше или меньше чем ожидает. Сегодня я бы помести в каждый &lt;code&gt;order_item&lt;/code&gt;  JSONB поле для цены которое выглядело следующим образом &lt;code&gt;JSONB: { added_at: '', price: ... }&lt;/code&gt;. В таком случае нет непредвиденных мутаций, появляется версионирование данных. К тому же, это больше информации для аналитиков.&lt;/li&gt;
+  &lt;li&gt;Датасайнтисты захотят менять цены, используя сложные паттерны расчета цены и кучу условий. Это приводит к постоянным изменениям цен в базе данных. Поэтому сформировалось правило, все что относится к ценам стоит как можно раньше изолировать в отдельный домен, сервис, rails engine, что угодно. Разделять стоит не только на уровне логики, но и на уровне данных. Вариант с JSONB полем - частный случай такого разделения.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h3 id=&quot;hyde-features&quot;&gt;Hyde features&lt;/h3&gt;
-
-&lt;p&gt;In addition to the features of Poole, Hyde adds the following:&lt;/p&gt;
-
+&lt;h2 id=&quot;обсервабилити&quot;&gt;Обсервабилити&lt;/h2&gt;
 &lt;ul&gt;
-  &lt;li&gt;Sidebar includes support for textual modules and a dynamically generated navigation with active link support&lt;/li&gt;
-  &lt;li&gt;Two orientations for content and sidebar, default (left sidebar) and &lt;a href=&quot;https://github.com/poole/lanyon#reverse-layout&quot;&gt;reverse&lt;/a&gt; (right sidebar), available via &lt;code&gt;&amp;lt;body&amp;gt;&lt;/code&gt; classes&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/poole/hyde#themes&quot;&gt;Eight optional color schemes&lt;/a&gt;, available via &lt;code&gt;&amp;lt;body&amp;gt;&lt;/code&gt; classes&lt;/li&gt;
+  &lt;li&gt;Мониторинг и логирование добавляют контроля и скажут что происходит или подскажут где проблема. Покрывать логами и мониторингом каждую строчку  дорого, поэтому top1 кандидаты: все что связанно с деньгами, checkout&amp;amp;refund flow, изменения в данных, интеграции с партнерами, которые приносят деньги. Подход коррелирует с правилом “знайте, что происходит в частях системы, которые приносят деньги”.&lt;/li&gt;
+  &lt;li&gt;Работу с деньгами стоит начинать с логов. Если нет ELK или хранилища для логов в котором можно найти информацию без боли - используйте базу данны. Решение для старта - отдельная аудит таблица куда будет попадать информация от платежного шлюза. Такая информация будет полезна как в дебаге, так и аналитикам для создания моделей.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://github.com/poole/hyde#readme&quot;&gt;Head to the readme&lt;/a&gt; to learn more.&lt;/p&gt;
+&lt;h2 id=&quot;архитектура&quot;&gt;Архитектура&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;Если в системе присутствуют мобильные устройства и другие виды клиентов (например b2b интеграции), значит стоит подумать о версионировании и заложить работу с версиями с самого начала. Кроме версионирования контроллера есть версионирование бизнес логики и версионирование данных.&lt;/li&gt;
+  &lt;li&gt;Если клиентов больше двух рекомендую  почитать о &lt;a href=&quot;https://samnewman.io/patterns/architectural/bff/&quot;&gt;BFF паттерне&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;Если событий нет в коде - вероятность появления крайне высока. Sidekiq не предназначен для event driven architecture, хотя помогает отодвинуть переход на новую архитектуру и работает для бэкграунд процессинга или в самом начале работы проекта. Поэтому стоит заложить в имплементацию последующее использование событий вне сайдкика.&lt;/li&gt;
+  &lt;li&gt;Код без событий для бизнеса и аналитиков - деньги на ветер. Стоит с самого старта проекта заложить, что события относящиеся к работе бизнеса нужно отправлять. Не обязательно использовать сложные решения или платить за SaaS продукты. Например, в собственных проектах шлю события в телеграм, а некоторые пишу в базу.&lt;/li&gt;
+  &lt;li&gt;Kafka как брокер событий с самого старта - провал. Это дорого и очень дорого. Если хоститесь в клауде - sqs или google pub/sub могут стать хорошим началом. Если нет - выбирайте из селфхостед аналогов. Также, стоит сразу подумать о прямой и обратной совместимости данных в событиях, а также о schema registry. Как хак подойдет отдельный репозиторий со схемами событий.&lt;/li&gt;
+  &lt;li&gt;Временное остаётся навсегда. Так технология добавленная на 2 спринта осталась в проекте на 2 года.&lt;/li&gt;
+&lt;/ul&gt;
 
-&lt;h3 id=&quot;browser-support&quot;&gt;Browser support&lt;/h3&gt;
+&lt;h2 id=&quot;данные-и-etl&quot;&gt;Данные и ETL&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;В маркете возникает ситуация, когда регулярно надо загружать новые данные. Пример - цены на товары и сама информация по товарам. Вместо создания rake тасков для загрузки csv в базу, стоит посмотреть на ETL и заложить работу с ним в архитектуру. Из  аналогов можно посмотреть на &lt;a href=&quot;https://github.com/thbar/kiba&quot;&gt;kiba&lt;/a&gt; (написан на руби) и &lt;a href=&quot;https://airflow.apache.org&quot;&gt;Apache Airflow&lt;/a&gt;, написанный на питоне.&lt;/li&gt;
+  &lt;li&gt;Желательно подумать о том, как выгружать данные из приложения аналитикам заранее. Шарить дамп БД может оказаться быстрым вариантом, но в долгосрочной перспективе принесет проблемы совместимости между схемой данных в базе и схемой данных у аналитиков. Как альтернативное решение может подойти событийный подход. Но стоит заранее подумать о схеме данных, версионировании и обратной совместимости между версиями.&lt;/li&gt;
+  &lt;li&gt;Аналитики хотят видеть динамику по данным и делают из дампов за разные дни список изменений. Событийный обмен данными также поможет в этой проблеме.&lt;/li&gt;
+  &lt;li&gt;Если в домене присутствует специфический ID с определенной структурой - сделайте эту структуру на уровне базы и приводите к этой структуре в бизнес логике. Например, у нас был &lt;a href=&quot;https://en.wikipedia.org/wiki/National_Drug_Code&quot;&gt;National Drug Code&lt;/a&gt;. Это строка которая может содержать &lt;code&gt;xxxx-xxxx-xx&lt;/code&gt; (10 знаков), &lt;code&gt;xxxxx-xxx-xx&lt;/code&gt; (10 знаков), &lt;code&gt;xxxxx-xxxx-x&lt;/code&gt; (10 знаков) или &lt;code&gt;xxxxx-xxxx-xx&lt;/code&gt; (11 знаков) значения. Спустя год разработки вскрылось, что система содержит три формата этого кода и часть системы поддерживает только десятизначный формат, а на одиннадцатизначном падает с ошибкой. Договорились о стандарте &lt;code&gt;5-4-2&lt;/code&gt; (11 знаков), сделали триггер на базу данных, чтобы лефтпадить значение до 11 чисел в строке (недостающие значения забивать нулями) и констрейн в базу данных на не больше 11 символов. В бизнес логике значение через лефтпад приводим к строке 11 символов (с нулями). В таком случае продюсер присылает данные в своем формате, а мы не боимся что в бд будет не валидное значение.&lt;/li&gt;
+&lt;/ul&gt;
 
-&lt;p&gt;Hyde is by preference a forward-thinking project. In addition to the latest versions of Chrome, Safari (mobile and desktop), and Firefox, it is only compatible with Internet Explorer 9 and above.&lt;/p&gt;
+&lt;hr /&gt;
 
-&lt;h3 id=&quot;download&quot;&gt;Download&lt;/h3&gt;
-
-&lt;p&gt;Hyde is developed on and hosted with GitHub. Head to the &lt;a href=&quot;https://github.com/poole/hyde&quot;&gt;GitHub repository&lt;/a&gt; for downloads, bug reports, and features requests.&lt;/p&gt;
-
-&lt;p&gt;Thanks!&lt;/p&gt;
+&lt;p&gt;Нашли опечатку или ошибку? Буду рад если &lt;a href=&quot;https://github.com/2pegramming/2pegramming.github.io/tree/master/_posts&quot;&gt;пошлете PR в гитхаб&lt;/a&gt;.&lt;/p&gt;
 </content>
  </entry>
  
