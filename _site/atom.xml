@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
  <title></title>
- <link href="http://localhost:4000/atom.xml" rel="self"/>
- <link href="http://localhost:4000/"/>
- <updated>2020-06-04T00:29:42+03:00</updated>
- <id>http://localhost:4000</id>
+ <link href="http://pepegramming.site/atom.xml" rel="self"/>
+ <link href="http://pepegramming.site/"/>
+ <updated>2020-06-04T00:34:02+03:00</updated>
+ <id>http://pepegramming.site</id>
  <author>
    <name>Anton Davydov</name>
    <email></email>
@@ -14,9 +14,9 @@
  
  <entry>
    <title>Ретроспектива: ecommerce</title>
-   <link href="http://localhost:4000/retrospection-ecommerce/"/>
+   <link href="http://pepegramming.site/retrospection-ecommerce/"/>
    <updated>2020-06-03T00:00:00+03:00</updated>
-   <id>http://localhost:4000/retrospection-ecommerce</id>
+   <id>http://pepegramming.site/retrospection-ecommerce</id>
    <content type="html">&lt;p&gt;Год назад я ушел из healthcare стартапа, который являлся ecommerce для лекарств в штатах. Сразу после ухода я написал черновик с советами самому себе о том, что стоит делать сразу, а на что обратить внимание.&lt;/p&gt;
 
 &lt;p&gt;Черновик забылся на год, но, найдя записи в блокноте, выложил в паблик как ретроспективу основанную на опыте и боли. Каждый пункт -  субъективный опыт и не претендуют на единственно верное решение. Если у вас есть похожие советы связанные с ecommerce - пишите комментарии, хочется собрать целый список. В будущем, можно будет сделать подобные списки и для других видов проектов.&lt;/p&gt;

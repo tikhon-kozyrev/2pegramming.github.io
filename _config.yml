@@ -6,10 +6,10 @@ permalink:        /:title/
 
 # Setup
 title:            ''
-tagline:          'A Jekyll theme'
+tagline:          '2pegramming.site'
 description:      '<a href="https://t.me/pepegramming" target="_blank">2pegramming</a>'
 url:              http://pepegramming.site
-baseurl:          /
+baseurl:          '/'
 
 author:
   name:           'Anton Davydov'
