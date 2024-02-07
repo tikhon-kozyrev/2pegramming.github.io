@@ -38,4 +38,4 @@ tags:
 
 ------
 
-Нашли опечатку или ошибку? Буду рад если [пошлете PR в гитхаб](https://github.com/2pegramming/2pegramming.github.io/tree/master/_posts).
+Нашли опечатку или ошибку? Буду рад если [пошлете PR в гитхаб](https://github.com/2pegramming/2pegramming.github.io/tree/master/posts).
