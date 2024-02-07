@@ -431,7 +431,7 @@ a.pagination-item:hover {
 
 /* Image group with caption */
 
-.content figcaption {
+figcaption {
   text-align: center;
   font-size: small;
   color: grey;
