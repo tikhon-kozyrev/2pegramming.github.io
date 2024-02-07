@@ -1,0 +1,30 @@
+---
+layout: default
+title: 2pegramming.questions
+---
+
+<h1>2pegramming.questions</h1>
+
+<div class="questions">
+  {% for question in site.questions %}
+  <div class="question">
+    <h1 class="question-title">
+      <a href="{{ question.url }}">
+        {{ question.title }}
+      </a>
+    </h1>
+
+    <span class="question-date">{{ question.date | date_to_string }}</span>
+
+    <div class="tag-cloud">
+      <ul>
+      {% for tag in question.tags %}
+        <li>
+          <a href="/tags/#{{ tag | downcase }}"><span>{{ tag | downcase }}</span></a>
+        </li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endfor %}
+</div>
