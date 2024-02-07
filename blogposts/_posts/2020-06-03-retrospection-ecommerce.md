@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Ретроспектива: ecommerce"
+categories: blogposts
 tags:
   - ретроспектива
   - ecommerce
