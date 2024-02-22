@@ -37,7 +37,7 @@ Use `/public/images/yyyy-mm-dd-post/imgage.jpg` after
 ```
 <details>
   <summary>Заумь</summary>
-  <pre>
+  <div markdown="1">
 
   ### Heading
   1. Foo
@@ -51,7 +51,7 @@ Use `/public/images/yyyy-mm-dd-post/imgage.jpg` after
     console.log('Something', something);
   }
   ```
-  </pre>
+  </div>
 </details>
 ```
 
