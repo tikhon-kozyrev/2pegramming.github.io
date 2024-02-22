@@ -35,22 +35,31 @@ Use `/public/images/yyyy-mm-dd-post/imgage.jpg` after
 ### ZA/UM texts
 
 ```
-<details>
-  <summary>Заумь</summary>
-  <div markdown="1">
+<details class="collapse_block">
+  <summary class="collapse_block__title">Заумь</summary>
 
-  ### Heading
-  1. Foo
-  2. Bar
-     * Baz
-     * Qux
+  <div class="collapse_block__content" markdown="1">
 
-  ### Some Javascript
-  ```js
-  function logSomething(something) {
-    console.log('Something', something);
-  }
-  ```
+**Heading hack**
+
+# Heading
+1. Foo
+2. Bar
+   * Baz
+   * Qux
+
+<img src="{{ 'public/images/questions/2024-02-07-test/logo.jpg' | relative_url }}" />
+
+## Some Javascript
+```js
+function logSomething(something) {
+  console.log('Something', something);
+}
+```
+### Some Javascript
+
+next [header](https://google.com)
+
   </div>
 </details>
 ```
