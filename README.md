@@ -13,3 +13,45 @@ main site
     altdescription=""
 %}
 ```
+
+### Publish post
+
+```
+# in /questions/_posts/yyyy-mm-dd-post.md
+
+---
+published: true | false
+---
+
+```
+
+### Images
+
+Put image in to: `public/images/yyyy-mm-dd-post/` folder
+
+Use `/public/images/yyyy-mm-dd-post/imgage.jpg` after
+
+
+### ZA/UM texts
+
+```
+<details>
+  <summary>Заумь</summary>
+  <pre>
+
+  ### Heading
+  1. Foo
+  2. Bar
+     * Baz
+     * Qux
+
+  ### Some Javascript
+  ```js
+  function logSomething(something) {
+    console.log('Something', something);
+  }
+  ```
+  </pre>
+</details>
+```
+
