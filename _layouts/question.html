@@ -5,6 +5,16 @@ layout: default
 <div class="question">
   <h1 class="question-title">{{ page.title }}</h1>
   <span class="question-date">{{ page.date | date_to_string }}</span>
+
+  <div class="message">
+    <p>Этот пост является ответом на вопрос из канала <a href="https://t.me/pepegramming/">pepegramming</a>. Если увидите не точность или захотите что-то добавить – буду рад комментариями в канале.</p>
+    <p>Если нашли опечатку – <a href="https://github.com/2pegramming/2pegramming.github.io/tree/master/questions/_posts">можно отправить PR с исправлениями</a></p>
+  </div>
+
+  <hr>
+
+  {% include toc.html html=content %}
+
   {{ content }}
 </div>
 

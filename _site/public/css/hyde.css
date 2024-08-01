@@ -310,3 +310,7 @@ a.sidebar-nav-item:focus {
 	border: 1px solid rgba(90, 140, 80, 1);
 	color: #fff;
 }
+
+.question-text {
+  background-color: rgba(129, 177, 110, 0.11);
+}

@@ -4,7 +4,7 @@
  <title></title>
  <link href="http://pepegramming.site/atom.xml" rel="self"/>
  <link href="http://pepegramming.site/"/>
- <updated>2020-06-04T14:27:27+03:00</updated>
+ <updated>2024-08-01T21:49:50+03:00</updated>
  <id>http://pepegramming.site</id>
  <author>
    <name>Anton Davydov</name>
@@ -13,19 +13,261 @@
 
  
  <entry>
+   <title>Как визуализировать схему базы данных</title>
+   <link href="http://pepegramming.site/questions/data-model/"/>
+   <updated>2024-08-01T00:00:00+03:00</updated>
+   <id>http://pepegramming.site/questions/data-model</id>
+   <content type="html">&lt;h2 id=&quot;вопрос&quot;&gt;Вопрос&lt;/h2&gt;
+
+&lt;div class=&quot;question-text&quot;&gt;
+  &lt;blockquote&gt;
+    &lt;p&gt;«Возникла проблема, что нужно визуализировать данные, но не понятно с чего начать. Что в таких случаях делаешь и какие есть инструменты для этого?»&lt;/p&gt;
+  &lt;/blockquote&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Так как вопрос без конкретики, выделю два случая:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Проект только в голове и хочется понять как связаны данные между собой&lt;/li&gt;
+  &lt;li&gt;Проект уже реализован в коде и хочется понять, что из себя представляет схема бд&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Поэтому, вместо короткого ответа «используй ERD», поговорим о каждом из вариантов. Но сначала разберемся с data modelling, благодаря которому можно определить нужный вид диаграммы для задачи.&lt;/p&gt;
+
+&lt;h2 id=&quot;data-modelling&quot;&gt;Data modelling&lt;/h2&gt;
+
+&lt;p&gt;Может показаться, что взять и начать фигачить SQL схему описывающую данные для проекта может быть разумной идеей. На деле это не так:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Так как нет структуры данных в голове, можно запутаться и упороться в вечное редактирование. А если данных много и связей еще больше - получится хаос который не влезет в голову;&lt;/li&gt;
+  &lt;li&gt;Полученную модель данных придется валидировать, причем с бизнесом/доменным экспертом. Не разработчикам будет сложно и валидация может затянуться;&lt;/li&gt;
+  &lt;li&gt;Когнитивная нагрузка увеличивается: работая с текстом, придется этот текст представить в виде модели в голове и потом обратно, из модели в текст;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-01-data-model/schema-vs-visualisation.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;Слева - схема в dbml, которая представлена в виде диаграммы (справа). Когда разбираешься с новым проектом – мне проще сразу картинкой (моделью) оперировать&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;В целом, выглядит надежно, как швейцарские часы. Поэтому придумали процесс, который назвали &lt;a href=&quot;https://en.wikipedia.org/wiki/Data_model&quot;&gt;data modeling&lt;/a&gt;. Data modeling помогает с определением релевантных для системы данных, связью между этими данными и как данные работают вместе, т.е. создать data model для системы. Главное, что стоит вынести из этой идеи – моделирование можно разбить на три «перспективы»:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Conceptual_schema&quot;&gt;Концептуальная&lt;/a&gt; говорит о том, какие данные используются системой и как данные связаны между собой. Т.е. тут о том, что необходимо бизнесу без привязки к конкретной реализации хранения данных в конкретной бд&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Logical_schema&quot;&gt;Логическая&lt;/a&gt; говорит о том, как данные структурируются в приложении. Т.е. берем любой язык описания схемы (будь то SQL, dbml или еще что) и описываем таблицы/колонки/классы/etc.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Physical_schema&quot;&gt;Физическая&lt;/a&gt; говорит о том, как данные физически храниться будут. Т.е. берем логическое описание и говорим где данные будут находиться физически и как все будет работать в реальности;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-01-data-model/conceptual-vs-logical-models.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;Сравнение концептуальной (правая) и логической (левая) схем, где пример из самого начала. Возможно, я сделал концептуальную модель не корректно, но задача показать идею, а не сделать корректную модель&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;При использовании концептуальной модели данных можно отказаться от «технической» информации и оставить только необходимое для реализации бизнесовой модели. Т.е. можно не запариваться с pk, fk и &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;created_at&lt;/code&gt; для каждого объекта и не думать о таблицах. Так, в примере выше, указан продукт как «элемент», к которому привязаны отдельные «элементы»: цена, тег и статус. Эта информация необходима для бизнес логики, хотя в реальности, если опуститься на логический уровень – данные оказываются в одной таблице.&lt;/p&gt;
+
+&lt;p&gt;Теперь, используя информацию о data modeling, можно вернуться к оригинальному вопросу.&lt;/p&gt;
+
+&lt;h2 id=&quot;случай-1-проект-только-в-голове-и-хочется-понять-как-связаны-данные-между-собой&quot;&gt;Случай 1: Проект только в голове и хочется понять как связаны данные между собой&lt;/h2&gt;
+
+&lt;p&gt;Возможно бизнес с нуля делает систему, либо же нужно разобраться в уже работающей бизнес логике (доменной модели). Для этого придется разбираться с данными: какие элементы, как элементы связаны. Если в этот момент думать о том, где какая таблица будет и что в этой таблице должно находиться – выглядит как доп нагрузка которая усложняет работу. Поэтому для первого случая концептуальное представление предпочтительнее: меньше когнитивная нагрузка, проще работать, можно показать бизнесу не объясняя что это за &lt;a href=&quot;https://www.datensen.com/blog/er-diagram/one-to-many-relationships/&quot;&gt;вилка&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;виды-нотаций-концептуальных-моделей&quot;&gt;Виды нотаций концептуальных моделей&lt;/h3&gt;
+
+&lt;p&gt;Тут список может быть большой, опишу только то, что сам знаю и видел. Подробно на каждой нотации останавливаться не буду, оставлю это на самостоятельное изучение.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://studme.org/77224/informatika/notatsiya_idef&quot;&gt;Нотация IDEF 1х&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://studme.org/77225/informatika/notatsiya_uml&quot;&gt;PlantUml&lt;/a&gt;, тут используется &lt;a href=&quot;https://en.wikipedia.org/wiki/Class_diagram&quot;&gt;class diagram&lt;/a&gt;, что сомнительно, но для общего развития пусть будет.&lt;/li&gt;
+  &lt;li&gt;Cтоит упомянуть &lt;a href=&quot;http://www.modelsphere.com/org/index.html&quot;&gt;Open ModelSphere&lt;/a&gt;, это oss инструмент, который помогает с моделированием данных не только концептуально, но и логически/физически
+ 
+Отдельно хочется рассказать еще о двух нотациях:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Первая нотация – &lt;a href=&quot;https://en.wikipedia.org/wiki/Entity–relationship_model&quot;&gt;ER model&lt;/a&gt; (иногда встречается как &lt;a href=&quot;https://studme.org/77222/informatika/notatsiya_pitera_chena&quot;&gt;нотация Питера Чена&lt;/a&gt;) и тут важно не путать с ER diagram. Модель создана Питером Ченом в 1976 году для абстрактного описания данных. При этом, модель предоставляет абстракции для концептуального/логического/физического моделирования. Интересный факт: эта одна из нотаций, которые повлияли на UML.&lt;/p&gt;
+
+&lt;p&gt;Вторая – &lt;a href=&quot;https://martinfowler.com/books/ap.html&quot;&gt;нотация концептуальной модели Мартина Фаулера из книги&lt;/a&gt;, о которой преступно мало знают.&lt;/p&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-01-data-model/martin-fowler-notation.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;Так выглядит нотация используемая Фаулером, она описана прямо на первых страницах книги&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;Что выбрать – решайте сами. Расскажу о том, что сам использую и почему редко использую описанные выше модели.&lt;/p&gt;
+
+&lt;h3 id=&quot;что-сам-использую&quot;&gt;Что сам использую&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://tough-roadway-bb5.notion.site/1-1-6adfeb2e07eb4269b5966ffb742d7fad#34413c7cc27b4e1da6ee31177875b93b&quot;&gt;Я использую сильно упрощенную нотацию, состоящую только из квадратов и стрелок&lt;/a&gt;, которую сам и «придумал». При этом, вместо использования сложных видов стрелок, подписываю вид связи который нужен (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;has_one&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;has_many&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;optional_has_one/many&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;many_to_many&lt;/code&gt;). Плюс использую цветовое обозначение для данных, которые используются в разных контекстах.&lt;/p&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-01-data-model/data-model-example.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;Пример модели из рабочего проекта. Тут кусок модели, &lt;a href=&quot;https://vc.ru/fedorandsamat/1103649-kak-my-perezapuskali-medicinskuyu-informacionnuyu-sistemu&quot;&gt;связанный с работой дантистов&lt;/a&gt;&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;Такой выбор обусловлен двумя причинами:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Концептуальную модель приходится валидировать с бизнесом/доменными экспертами. Чем сложнее нотация, тем больше шансов, что человек запутается. Плюс грузить и без этого занятых людей так себе подход.&lt;/li&gt;
+  &lt;li&gt;Внимательность – не обо мне, поэтому с большим шансом запутаюсь или пропущу стрелку/форму и по итогу получится фигня. Рисковать и проверять себя по 10 раз не хочется.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Если в компании уже есть стандарт, либо хотите использовать распространенный стандарт – лучше забыть эту часть текста и использовать то, что уже принято. Если ничего такого нет, возможно стоит скопировать мое решение, а после, если этого окажется мало, выбрать любую из описанных выше нотаций.&lt;/p&gt;
+
+&lt;h3 id=&quot;советы-для-моделирования-данных-не-схемы-бд&quot;&gt;Советы для моделирования данных (не схемы бд)&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Забудьте о таблицах и реализации в бд. Начните с данных, которые необходимы для работы бизнес модели. Главная причина такого категоричного совета – проще замапить корректную концептуальную модель на реализацию конкретной базы данных, чем упороться с реализацией и потерять важные данные. Это может привести к тому, что решение не будет бизнес задачу решать, а будет подстраиваться под техническое решение, вокруг которого зацепитесь;&lt;/li&gt;
+  &lt;li&gt;Вытекает из первого совета: в концептуальной модели не нужны данные, которые окажутся в базе данных. Поэтому о &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pk&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fk&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;created_at&lt;/code&gt;, etc можно забыть. Только если это не часть доменной модели;&lt;/li&gt;
+  &lt;li&gt;Не важно какую нотацию выбрали, модель без легенды – деньги на ветер;&lt;/li&gt;
+  &lt;li&gt;Валидируете модель с бизнесом/доменным экспертом;&lt;/li&gt;
+  &lt;li&gt;Между дублированием элементов и уменьшением стрелок – выбирайте дублирование. Так можно снизить когнитивную нагрузку, которая появится из-за стрелочного хаоса. По этой же причине старайтесь избегать пересечения стрелок;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;С моделированием разобрались. Давайте поговорим о генерации картинок из схемы бд.&lt;/p&gt;
+
+&lt;h2 id=&quot;случай-2-проект-уже-реализован-в-коде-и-хочется-понять-что-из-себя-представляет-схема-бд&quot;&gt;Случай 2: Проект уже реализован в коде и хочется понять, что из себя представляет схема бд&lt;/h2&gt;
+
+&lt;p&gt;В данном случае, если нужна концептуальная модель – инструментов не знаю, к сожалению. Поэтому, для проектов с реализованной схемой бд, рисую концептуальные модели «руками».&lt;/p&gt;
+
+&lt;p&gt;Но если хватит логической модели, можно найти решение. Из того что знаю – ER diagram (которая, является подмножеством ER model). Существует новомодный dbml, который тоже использовал. Еще стоит упомянуть &lt;a href=&quot;https://studme.org/77223/informatika/notatsiya_martina_crows_foot&quot;&gt;Нотацию Мартина (Crow’s Foot)&lt;/a&gt;, но в живую не наблюдал. Если знаете другие варианты – буду рад комментариями, ибо самому интересно, а быстро нагуглить альтернативы не вышло.&lt;/p&gt;
+
+&lt;p&gt;Для генерации «картинки» я использую следующие подходы:&lt;/p&gt;
+
+&lt;h3 id=&quot;генерация-модели-из-кода&quot;&gt;Генерация модели из кода&lt;/h3&gt;
+
+&lt;p&gt;В эту секцию входят:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;инструменты diagram as a code: &lt;a href=&quot;https://graphviz.org/Gallery/neato/ER.html&quot;&gt;graphiz&lt;/a&gt;, &lt;a href=&quot;https://mermaid.js.org/syntax/entityRelationshipDiagram.html&quot;&gt;mermaid&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;библиотеки для разных языков (&lt;a href=&quot;https://github.com/drivendataorg/erdantic&quot;&gt;python&lt;/a&gt;, &lt;a href=&quot;https://github.com/voormedia/rails-erd&quot;&gt;ruby&lt;/a&gt;, &lt;a href=&quot;https://github.com/fuelen/ecto_erd&quot;&gt;elixir/ecto&lt;/a&gt;, &lt;a href=&quot;https://github.com/gmarik/go-erd&quot;&gt;golang&lt;/a&gt;, &lt;a href=&quot;https://www.npmjs.com/package/prisma-erd-generator&quot;&gt;js/prisma&lt;/a&gt;, etc) которые под капотом используют graphiz.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;С вероятностью в 99% там будет ERD. А подход подойдет в двух случаях:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Если схема данных меньше ~15 таблиц и хочется быстро подключить генератор, а после забыть и получать каждый релиз новый артефакт;&lt;/li&gt;
+  &lt;li&gt;Если модель нужна для поста или показать идею;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Плюсы:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Работает для схем, где таблиц меньше ~15 или когда связей мало между таблицами;&lt;/li&gt;
+  &lt;li&gt;Библиотеки работают из коробки и легко настраиваются;&lt;/li&gt;
+  &lt;li&gt;Если говорим о библиотеках – нет проблем с обновлением схемы после изменений, так как генерируется новый файл;&lt;/li&gt;
+  &lt;li&gt;Легко шарить между коллегами. Отправляем картинку в чат, добавляем в репозиторий или конфлюенс/ноушен/etc;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Из минусов:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Нельзя поменять положение элементов или связей. А автоматическая генерация не поддается логике;&lt;/li&gt;
+  &lt;li&gt;На больших схемах получается не читаемая каша. Особенно, когда дело касается связей;&lt;/li&gt;
+  &lt;li&gt;Генерируется векторная картинка, если схема увесистая – может шакалить;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;генерация-erd-в-инструментах-для-диаграм&quot;&gt;Генерация ERD в инструментах для диаграм&lt;/h3&gt;
+
+&lt;p&gt;Lucidchart предоставляет &lt;a href=&quot;https://www.lucidchart.com/pages/examples/er-diagram-tool&quot;&gt;инструмент, который генерирует ERD по загруженной схеме бд&lt;/a&gt;. Дальше получаете диаграмму, в которой можно двигать элементы, стрелки, добавлять новые элементы, менять цвета и делать что угодно.&lt;/p&gt;
+
+&lt;p&gt;Draw.io реализовали &lt;a href=&quot;https://www.drawio.com/doc/faq/sql-plugin&quot;&gt;аналогичный инструмент&lt;/a&gt;. Только для работы придется вставлять SQL код. После, с полученной схемой, также можно производит манипуляции с диаграммой.&lt;/p&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-01-data-model/erd-bad-example.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;Пример сгенерированной ERD в lucidchart. Получи такое картинкой – сразу бы отказался от проекта&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;&lt;strong&gt;Плюсы:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;В отличии от векторной картинки – можно делать с полученной моделью что угодно;&lt;/li&gt;
+  &lt;li&gt;Если не хватит сгенерированных элементов – можно добавить (например стикеры и комментарии);&lt;/li&gt;
+  &lt;li&gt;Если схема большая – можно двигать каждую связь или элемент, плюс выручает поиск по модели;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Из минусов:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Могут теряться связи между элементами, особенно если связи указаны в коде, но не учтены в схеме бд. Пару раз попадался на эту уловку и приходилось руками достраивать модель, что малоприятно;&lt;/li&gt;
+  &lt;li&gt;Хоть с диаграммой можно делать что угодно, но первичная генерация хаотична. Поэтому для «наведения порядка» придется самостоятельно двигать элементы;&lt;/li&gt;
+  &lt;li&gt;Специфичный импорт, из-за чего придется под новую версию схемы делать новую диаграмму. А если добавили что-то кастомное, придется дублировать руками;&lt;/li&gt;
+  &lt;li&gt;Шарить модель может быть проблемно, особенно если используете lucid и душит жаба платить за кучу людей (но для конфлюенса был плагин);&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Заметка: помните, что генераторы ERD присутствуют не везде. Например, &lt;a href=&quot;https://miro.com/diagramming/er-diagram/&quot;&gt;в miro нет ERD генераторов&lt;/a&gt;, вместо этого, получите только элементы для того, чтобы самостоятельно рисовать модель. &lt;/p&gt;
+
+&lt;h3 id=&quot;использование-dbml&quot;&gt;Использование dbml&lt;/h3&gt;
+
+&lt;p&gt;Персональное открытие прошлого года. Вместо рассказа, &lt;a href=&quot;https://dbdiagram.io/d&quot;&gt;лучше посмотреть самостоятельно&lt;/a&gt; (в верхнем левом углу, где лого, можно загрузить advanced sample, который использовался в примерах в начале статьи).&lt;/p&gt;
+
+&lt;p&gt;При этом, так как dbml схема типизирована, можно написать конвертер из erd в dbml и получить генерацию схемы из кода (делал так для &lt;a href=&quot;https://github.com/voormedia/rails-erd&quot;&gt;erd-rails&lt;/a&gt; генератора). После, вставляем схему в редактор и изучаем схему баз данных.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Плюсы:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Из-за динамичности, можно двигать элементы, что работает с большими схемами;&lt;/li&gt;
+  &lt;li&gt;Diagram as a code. Можно &lt;a href=&quot;https://dbml.dbdiagram.io/cli#convert--a-sql-file-to-dbml&quot;&gt;генерировать dbml схему по SQL&lt;/a&gt;, присутствует &lt;a href=&quot;https://github.com/stepanic/parse-server-SCHEMA-to-DBML&quot;&gt;библиотека для монги (не проверял)&lt;/a&gt;, &lt;a href=&quot;https://github.com/hamedsj/DbmlForDjango&quot;&gt;для джанги&lt;/a&gt; библиотека существует;&lt;/li&gt;
+  &lt;li&gt;Предпросмотр работает в браузере, не надо ничего ставить локально;&lt;/li&gt;
+  &lt;li&gt;Так как генерация из кода – можно избежать ситуации, когда связи не отображаются, так как связей нет в схеме бд, но есть на уровне кода;
+  
+&amp;lt;/br&amp;gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Из минусов:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Нет нормальной экосистемы. Библиотеки придется писать самому, в частности для мало популярных языков;&lt;/li&gt;
+  &lt;li&gt;Еще один язык описания схемы, который придется изучить;&lt;/li&gt;
+  &lt;li&gt;Если хотите хранить и смотреть модели командой, придется платить. Хотите селфхостед – на 2023 год находил аналоги, но каждый оставлял желать лучшего;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;генерация-из-редактораide&quot;&gt;Генерация из редактора/IDE&lt;/h3&gt;
+
+&lt;p&gt;Так как всю жизнь просидел в vim, без возможности выхода, то особо ничего сказать о генерации схем из редактора и инструментов для этого. Знаю, что инструменты существуют и пользователи jetbrains &lt;a href=&quot;https://www.jetbrains.com/help/datagrip/creating-diagrams.html#db_diagrams&quot;&gt;могут смотреть на схему не выходя из редактора&lt;/a&gt;. Лучше погуглить самостоятельно.&lt;/p&gt;
+
+&lt;h2 id=&quot;итоги&quot;&gt;Итоги&lt;/h2&gt;
+
+&lt;p&gt;Если необходимо смоделировать данные, то важно разобраться с целью модели, так как каждое представление закрывает определенные потребности:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Концептуальная модель – говорит о том, какие данные используются системой и как данные связаны между собой. Подойдет если важно понять что за данные нужны в бизнес логике и как данные связаны между собой;&lt;/li&gt;
+  &lt;li&gt;Логическая модель – говорит о том, как данные структурируются в приложении. Поможет описать или посмотреть на схему бд. Можно сгенерировать автоматически;&lt;/li&gt;
+  &lt;li&gt;Физическая модель – говорит о том, как данные физически храниться будут. Сам не использовал, но допускаю, что поможет в инфраструктурных документах;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Если нужно визуализировать схему бд, то тут два варианта: для мелких схем или для примеров лучше взять генераторы или diagram as a code инструменты, а для больших схем лучше либо взять инструменты для диаграм, либо посмотреть в сторону dbml, который можно использовать и в качестве генератора.&lt;/p&gt;
+
+&lt;h2 id=&quot;что-еще-почитать-по-теме&quot;&gt;Что еще почитать по теме&lt;/h2&gt;
+
+&lt;p&gt;Если тема data model заинтересовала, собрал четыре ссылки, по которым можно погрузиться в тему глубже. &lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;[en] В статье не рассказывал про archimate. Хотя там так же &lt;a href=&quot;https://eaprincipals.com/data-modeling-with-archi/&quot;&gt;можно сделать нужную data model&lt;/a&gt;. Если используете archi - ничего нового не узнаете, скорее всего;&lt;/li&gt;
+  &lt;li&gt;[en] &lt;a href=&quot;https://www.mongodb.com/basics/data-modeling&quot;&gt;Статья из блога mongoDB, в которой рассказывается data modelling&lt;/a&gt;. В тексте найдете описание подхода, виды представлений, описание процесса, советы и еще больше инструментов и так далее;&lt;/li&gt;
+  &lt;li&gt;[en] &lt;a href=&quot;https://www.thoughtspot.com/data-trends/data-modeling/conceptual-data-model-examples&quot;&gt;Статья о том, как сделать концептуальную модель&lt;/a&gt;, какие виды есть и в чем ее преимущества;&lt;/li&gt;
+  &lt;li&gt;[en] Серия статей о визуализации бд. По &lt;a href=&quot;https://minimalmodeling.substack.com/p/visual-language-and-database-visualization&quot;&gt;ссылке третья часть&lt;/a&gt;, где упоминаются разные приложения для визуализации: MySQL Workbench,  Anchor,  TLDraw и Arrows.app;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;Нашли опечатку или ошибку? Буду рад &lt;a href=&quot;https://github.com/2pegramming/2pegramming.github.io/tree/master/questions&quot;&gt;PR-у&lt;/a&gt;.&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
    <title>Ретроспектива: ecommerce</title>
-   <link href="http://pepegramming.site/retrospection-ecommerce/"/>
+   <link href="http://pepegramming.site/blogposts/retrospection-ecommerce/"/>
    <updated>2020-06-03T00:00:00+03:00</updated>
-   <id>http://pepegramming.site/retrospection-ecommerce</id>
+   <id>http://pepegramming.site/blogposts/retrospection-ecommerce</id>
    <content type="html">&lt;p&gt;Год назад я ушел из healthcare стартапа, который являлся ecommerce для лекарств в штатах. Сразу после ухода я написал черновик с советами самому себе о том, что стоит делать сразу, а на что обратить внимание.&lt;/p&gt;
 
 &lt;p&gt;Черновик забылся на год, но, найдя записи в блокноте, выложил в паблик как ретроспективу основанную на опыте и боли. Каждый пункт -  субъективный опыт и не претендуют на единственно верное решение. Если у вас есть похожие советы связанные с ecommerce - пишите комментарии, хочется собрать целый список. В будущем, можно будет сделать подобные списки и для других видов проектов.&lt;/p&gt;
 
 &lt;h2 id=&quot;ордер-и-цены&quot;&gt;Ордер и цены&lt;/h2&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Cart&lt;/code&gt; - частный случай &lt;code class=&quot;highlighter-rouge&quot;&gt;order&lt;/code&gt;. Вместо двух сущностей можно взять &lt;code class=&quot;highlighter-rouge&quot;&gt;order&lt;/code&gt;  со статусом &lt;code class=&quot;highlighter-rouge&quot;&gt;created&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Cart&lt;/code&gt; - частный случай &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;order&lt;/code&gt;. Вместо двух сущностей можно взять &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;order&lt;/code&gt;  со статусом &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;created&lt;/code&gt;.&lt;/li&gt;
   &lt;li&gt;Купоны появятся. Делать купон отдельной сущностью - усложняет логику и добавит условий в чекаут и рефанд логику. Сегодня, если нужно будет делать добавить купоны в систему - сделаю купон отдельным айтемом с отрицательной ценой (скидкой).&lt;/li&gt;
-  &lt;li&gt;В &lt;code class=&quot;highlighter-rouge&quot;&gt;order_items&lt;/code&gt; линковался на &lt;code class=&quot;highlighter-rouge&quot;&gt;item&lt;/code&gt; и &lt;code class=&quot;highlighter-rouge&quot;&gt;price&lt;/code&gt; из базы. Также, аналитики постоянно меняли цены на товары. Такая ситуация привела к мутациям ордера и было тяжело сказать, что и сколько стоило для ордера годичной давности. А пользователь получал не предсказуемый UX, так как возникала гипотетическая ситуация, что в момент чекаута цена на товар меняется и пользователь заплатит больше или меньше чем ожидает. Сегодня я бы помести в каждый &lt;code class=&quot;highlighter-rouge&quot;&gt;order_item&lt;/code&gt;  JSONB поле для цены которое выглядело следующим образом &lt;code class=&quot;highlighter-rouge&quot;&gt;JSONB: { added_at: '', price: ... }&lt;/code&gt;. В таком случае нет непредвиденных мутаций, появляется версионирование данных. К тому же, это больше информации для аналитиков.&lt;/li&gt;
+  &lt;li&gt;В &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;order_items&lt;/code&gt; линковался на &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;item&lt;/code&gt; и &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;price&lt;/code&gt; из базы. Также, аналитики постоянно меняли цены на товары. Такая ситуация привела к мутациям ордера и было тяжело сказать, что и сколько стоило для ордера годичной давности. А пользователь получал не предсказуемый UX, так как возникала гипотетическая ситуация, что в момент чекаута цена на товар меняется и пользователь заплатит больше или меньше чем ожидает. Сегодня я бы помести в каждый &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;order_item&lt;/code&gt;  JSONB поле для цены которое выглядело следующим образом &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;JSONB: { added_at: &apos;&apos;, price: ... }&lt;/code&gt;. В таком случае нет непредвиденных мутаций, появляется версионирование данных. К тому же, это больше информации для аналитиков.&lt;/li&gt;
   &lt;li&gt;Датасайнтисты захотят менять цены, используя сложные паттерны расчета цены и кучу условий. Это приводит к постоянным изменениям цен в базе данных. Поэтому сформировалось правило, все что относится к ценам стоит как можно раньше изолировать в отдельный домен, сервис, rails engine, что угодно. Разделять стоит не только на уровне логики, но и на уровне данных. Вариант с JSONB полем - частный случай такого разделения.&lt;/li&gt;
 &lt;/ul&gt;
 
@@ -50,12 +292,12 @@
   &lt;li&gt;В маркете возникает ситуация, когда регулярно надо загружать новые данные. Пример - цены на товары и сама информация по товарам. Вместо создания rake тасков для загрузки csv в базу, стоит посмотреть на ETL и заложить работу с ним в архитектуру. Из  аналогов можно посмотреть на &lt;a href=&quot;https://github.com/thbar/kiba&quot;&gt;kiba&lt;/a&gt; (написан на руби) и &lt;a href=&quot;https://airflow.apache.org&quot;&gt;Apache Airflow&lt;/a&gt;, написанный на питоне.&lt;/li&gt;
   &lt;li&gt;Желательно подумать о том, как выгружать данные из приложения аналитикам заранее. Шарить дамп БД может оказаться быстрым вариантом, но в долгосрочной перспективе принесет проблемы совместимости между схемой данных в базе и схемой данных у аналитиков. Как альтернативное решение может подойти событийный подход. Но стоит заранее подумать о схеме данных, версионировании и обратной совместимости между версиями.&lt;/li&gt;
   &lt;li&gt;Аналитики хотят видеть динамику по данным и делают из дампов за разные дни список изменений. Событийный обмен данными также поможет в этой проблеме.&lt;/li&gt;
-  &lt;li&gt;Если в домене присутствует специфический ID с определенной структурой - сделайте эту структуру на уровне базы и приводите к этой структуре в бизнес логике. Например, у нас был &lt;a href=&quot;https://en.wikipedia.org/wiki/National_Drug_Code&quot;&gt;National Drug Code&lt;/a&gt;. Это строка которая может содержать &lt;code class=&quot;highlighter-rouge&quot;&gt;xxxx-xxxx-xx&lt;/code&gt; (10 знаков), &lt;code class=&quot;highlighter-rouge&quot;&gt;xxxxx-xxx-xx&lt;/code&gt; (10 знаков), &lt;code class=&quot;highlighter-rouge&quot;&gt;xxxxx-xxxx-x&lt;/code&gt; (10 знаков) или &lt;code class=&quot;highlighter-rouge&quot;&gt;xxxxx-xxxx-xx&lt;/code&gt; (11 знаков) значения. Спустя год разработки вскрылось, что система содержит три формата этого кода и часть системы поддерживает только десятизначный формат, а на одиннадцатизначном падает с ошибкой. Договорились о стандарте &lt;code class=&quot;highlighter-rouge&quot;&gt;5-4-2&lt;/code&gt; (11 знаков), сделали триггер на базу данных, чтобы лефтпадить значение до 11 чисел в строке (недостающие значения забивать нулями) и констрейн в базу данных на не больше 11 символов. В бизнес логике значение через лефтпад приводим к строке 11 символов (с нулями). В таком случае продюсер присылает данные в своем формате, а мы не боимся что в бд будет не валидное значение.&lt;/li&gt;
+  &lt;li&gt;Если в домене присутствует специфический ID с определенной структурой - сделайте эту структуру на уровне базы и приводите к этой структуре в бизнес логике. Например, у нас был &lt;a href=&quot;https://en.wikipedia.org/wiki/National_Drug_Code&quot;&gt;National Drug Code&lt;/a&gt;. Это строка которая может содержать &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;xxxx-xxxx-xx&lt;/code&gt; (10 знаков), &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;xxxxx-xxx-xx&lt;/code&gt; (10 знаков), &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;xxxxx-xxxx-x&lt;/code&gt; (10 знаков) или &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;xxxxx-xxxx-xx&lt;/code&gt; (11 знаков) значения. Спустя год разработки вскрылось, что система содержит три формата этого кода и часть системы поддерживает только десятизначный формат, а на одиннадцатизначном падает с ошибкой. Договорились о стандарте &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;5-4-2&lt;/code&gt; (11 знаков), сделали триггер на базу данных, чтобы лефтпадить значение до 11 чисел в строке (недостающие значения забивать нулями) и констрейн в базу данных на не больше 11 символов. В бизнес логике значение через лефтпад приводим к строке 11 символов (с нулями). В таком случае продюсер присылает данные в своем формате, а мы не боимся что в бд будет не валидное значение.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;hr /&gt;
 
-&lt;p&gt;Нашли опечатку или ошибку? Буду рад если &lt;a href=&quot;https://github.com/2pegramming/2pegramming.github.io/tree/master/_posts&quot;&gt;пошлете PR в гитхаб&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Нашли опечатку или ошибку? Буду рад если &lt;a href=&quot;https://github.com/2pegramming/2pegramming.github.io/tree/master/posts&quot;&gt;пошлете PR в гитхаб&lt;/a&gt;.&lt;/p&gt;
 </content>
  </entry>
  

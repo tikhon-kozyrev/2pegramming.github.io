@@ -428,3 +428,27 @@ a.pagination-item:hover {
     border-bottom-right-radius: 4px;
   }
 }
+
+/* Image group with caption */
+
+figcaption {
+  text-align: center;
+  font-size: small;
+  color: grey;
+}
+
+/* Collapse blocks */
+
+.collapse_block {
+  background-color: #eaeaea;
+  padding: 1% 2%;
+}
+
+.collapse_block__title {
+  font-weight: bold;
+}
+
+.collapse_block__content {
+  margin-top: 2%;
+  padding: 2% 1% 0 5%;
+}

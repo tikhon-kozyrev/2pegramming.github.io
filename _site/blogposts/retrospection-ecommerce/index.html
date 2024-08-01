@@ -46,13 +46,14 @@
     <nav class="sidebar-nav">
       <a class="sidebar-nav-item" href="/">Главная</a>
 
-      <a class="sidebar-nav-item" href="/posts">Посты</a>
-      <a class="sidebar-nav-item" href="/streams">Стримы</a>
+      <a class="sidebar-nav-item" href="/blogposts">Посты</a>
+      <!-- <a class="sidebar&#45;nav&#45;item" href="/streams">Стримы</a> -->
+      <!-- <a class="sidebar&#45;nav&#45;item" href="/questions">Ответы на вопросы</a> -->
       <a class="sidebar-nav-item" href="https://goo.gl/forms/iUd1Gufq6WnTsaO62">Обратная связь</a>
       <a class="sidebar-nav-item" href="http://github.com/2pegramming">GitHub</a>
     </nav>
 
-    <p>&copy; 2020. All rights reserved.</p>
+    <p>&copy; 2024. All rights reserved.</p>
   </div>
 </div>
 
@@ -67,9 +68,9 @@
 
 <h2 id="ордер-и-цены">Ордер и цены</h2>
 <ul>
-  <li><code class="highlighter-rouge">Cart</code> - частный случай <code class="highlighter-rouge">order</code>. Вместо двух сущностей можно взять <code class="highlighter-rouge">order</code>  со статусом <code class="highlighter-rouge">created</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">Cart</code> - частный случай <code class="language-plaintext highlighter-rouge">order</code>. Вместо двух сущностей можно взять <code class="language-plaintext highlighter-rouge">order</code>  со статусом <code class="language-plaintext highlighter-rouge">created</code>.</li>
   <li>Купоны появятся. Делать купон отдельной сущностью - усложняет логику и добавит условий в чекаут и рефанд логику. Сегодня, если нужно будет делать добавить купоны в систему - сделаю купон отдельным айтемом с отрицательной ценой (скидкой).</li>
-  <li>В <code class="highlighter-rouge">order_items</code> линковался на <code class="highlighter-rouge">item</code> и <code class="highlighter-rouge">price</code> из базы. Также, аналитики постоянно меняли цены на товары. Такая ситуация привела к мутациям ордера и было тяжело сказать, что и сколько стоило для ордера годичной давности. А пользователь получал не предсказуемый UX, так как возникала гипотетическая ситуация, что в момент чекаута цена на товар меняется и пользователь заплатит больше или меньше чем ожидает. Сегодня я бы помести в каждый <code class="highlighter-rouge">order_item</code>  JSONB поле для цены которое выглядело следующим образом <code class="highlighter-rouge">JSONB: { added_at: '', price: ... }</code>. В таком случае нет непредвиденных мутаций, появляется версионирование данных. К тому же, это больше информации для аналитиков.</li>
+  <li>В <code class="language-plaintext highlighter-rouge">order_items</code> линковался на <code class="language-plaintext highlighter-rouge">item</code> и <code class="language-plaintext highlighter-rouge">price</code> из базы. Также, аналитики постоянно меняли цены на товары. Такая ситуация привела к мутациям ордера и было тяжело сказать, что и сколько стоило для ордера годичной давности. А пользователь получал не предсказуемый UX, так как возникала гипотетическая ситуация, что в момент чекаута цена на товар меняется и пользователь заплатит больше или меньше чем ожидает. Сегодня я бы помести в каждый <code class="language-plaintext highlighter-rouge">order_item</code>  JSONB поле для цены которое выглядело следующим образом <code class="language-plaintext highlighter-rouge">JSONB: { added_at: '', price: ... }</code>. В таком случае нет непредвиденных мутаций, появляется версионирование данных. К тому же, это больше информации для аналитиков.</li>
   <li>Датасайнтисты захотят менять цены, используя сложные паттерны расчета цены и кучу условий. Это приводит к постоянным изменениям цен в базе данных. Поэтому сформировалось правило, все что относится к ценам стоит как можно раньше изолировать в отдельный домен, сервис, rails engine, что угодно. Разделять стоит не только на уровне логики, но и на уровне данных. Вариант с JSONB полем - частный случай такого разделения.</li>
 </ul>
 
@@ -94,18 +95,27 @@
   <li>В маркете возникает ситуация, когда регулярно надо загружать новые данные. Пример - цены на товары и сама информация по товарам. Вместо создания rake тасков для загрузки csv в базу, стоит посмотреть на ETL и заложить работу с ним в архитектуру. Из  аналогов можно посмотреть на <a href="https://github.com/thbar/kiba">kiba</a> (написан на руби) и <a href="https://airflow.apache.org">Apache Airflow</a>, написанный на питоне.</li>
   <li>Желательно подумать о том, как выгружать данные из приложения аналитикам заранее. Шарить дамп БД может оказаться быстрым вариантом, но в долгосрочной перспективе принесет проблемы совместимости между схемой данных в базе и схемой данных у аналитиков. Как альтернативное решение может подойти событийный подход. Но стоит заранее подумать о схеме данных, версионировании и обратной совместимости между версиями.</li>
   <li>Аналитики хотят видеть динамику по данным и делают из дампов за разные дни список изменений. Событийный обмен данными также поможет в этой проблеме.</li>
-  <li>Если в домене присутствует специфический ID с определенной структурой - сделайте эту структуру на уровне базы и приводите к этой структуре в бизнес логике. Например, у нас был <a href="https://en.wikipedia.org/wiki/National_Drug_Code">National Drug Code</a>. Это строка которая может содержать <code class="highlighter-rouge">xxxx-xxxx-xx</code> (10 знаков), <code class="highlighter-rouge">xxxxx-xxx-xx</code> (10 знаков), <code class="highlighter-rouge">xxxxx-xxxx-x</code> (10 знаков) или <code class="highlighter-rouge">xxxxx-xxxx-xx</code> (11 знаков) значения. Спустя год разработки вскрылось, что система содержит три формата этого кода и часть системы поддерживает только десятизначный формат, а на одиннадцатизначном падает с ошибкой. Договорились о стандарте <code class="highlighter-rouge">5-4-2</code> (11 знаков), сделали триггер на базу данных, чтобы лефтпадить значение до 11 чисел в строке (недостающие значения забивать нулями) и констрейн в базу данных на не больше 11 символов. В бизнес логике значение через лефтпад приводим к строке 11 символов (с нулями). В таком случае продюсер присылает данные в своем формате, а мы не боимся что в бд будет не валидное значение.</li>
+  <li>Если в домене присутствует специфический ID с определенной структурой - сделайте эту структуру на уровне базы и приводите к этой структуре в бизнес логике. Например, у нас был <a href="https://en.wikipedia.org/wiki/National_Drug_Code">National Drug Code</a>. Это строка которая может содержать <code class="language-plaintext highlighter-rouge">xxxx-xxxx-xx</code> (10 знаков), <code class="language-plaintext highlighter-rouge">xxxxx-xxx-xx</code> (10 знаков), <code class="language-plaintext highlighter-rouge">xxxxx-xxxx-x</code> (10 знаков) или <code class="language-plaintext highlighter-rouge">xxxxx-xxxx-xx</code> (11 знаков) значения. Спустя год разработки вскрылось, что система содержит три формата этого кода и часть системы поддерживает только десятизначный формат, а на одиннадцатизначном падает с ошибкой. Договорились о стандарте <code class="language-plaintext highlighter-rouge">5-4-2</code> (11 знаков), сделали триггер на базу данных, чтобы лефтпадить значение до 11 чисел в строке (недостающие значения забивать нулями) и констрейн в базу данных на не больше 11 символов. В бизнес логике значение через лефтпад приводим к строке 11 символов (с нулями). В таком случае продюсер присылает данные в своем формате, а мы не боимся что в бд будет не валидное значение.</li>
 </ul>
 
 <hr />
 
-<p>Нашли опечатку или ошибку? Буду рад если <a href="https://github.com/2pegramming/2pegramming.github.io/tree/master/_posts">пошлете PR в гитхаб</a>.</p>
+<p>Нашли опечатку или ошибку? Буду рад если <a href="https://github.com/2pegramming/2pegramming.github.io/tree/master/posts">пошлете PR в гитхаб</a>.</p>
 
 </div>
 
 <!-- <div class="related"> -->
 <!--   <h2>Related Posts</h2> -->
 <!--   <ul class="related&#45;posts"> -->
+<!--      -->
+<!--       <li> -->
+<!--         <h3> -->
+<!--           <a href="/questions/data-model/"> -->
+<!--             Как визуализировать схему базы данных -->
+<!--             <small>01 Aug 2024</small> -->
+<!--           </a> -->
+<!--         </h3> -->
+<!--       </li> -->
 <!--      -->
 <!--   </ul> -->
 <!-- </div> -->
