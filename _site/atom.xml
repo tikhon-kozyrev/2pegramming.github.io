@@ -4,7 +4,7 @@
  <title></title>
  <link href="http://pepegramming.site/atom.xml" rel="self"/>
  <link href="http://pepegramming.site/"/>
- <updated>2024-08-01T21:49:50+03:00</updated>
+ <updated>2024-08-01T21:55:36+03:00</updated>
  <id>http://pepegramming.site</id>
  <author>
    <name>Anton Davydov</name>
@@ -247,10 +247,6 @@
   &lt;li&gt;[en] &lt;a href=&quot;https://www.thoughtspot.com/data-trends/data-modeling/conceptual-data-model-examples&quot;&gt;Статья о том, как сделать концептуальную модель&lt;/a&gt;, какие виды есть и в чем ее преимущества;&lt;/li&gt;
   &lt;li&gt;[en] Серия статей о визуализации бд. По &lt;a href=&quot;https://minimalmodeling.substack.com/p/visual-language-and-database-visualization&quot;&gt;ссылке третья часть&lt;/a&gt;, где упоминаются разные приложения для визуализации: MySQL Workbench,  Anchor,  TLDraw и Arrows.app;&lt;/li&gt;
 &lt;/ul&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;Нашли опечатку или ошибку? Буду рад &lt;a href=&quot;https://github.com/2pegramming/2pegramming.github.io/tree/master/questions&quot;&gt;PR-у&lt;/a&gt;.&lt;/p&gt;
 </content>
  </entry>
  
