@@ -4,13 +4,316 @@
  <title></title>
  <link href="http://pepegramming.site/atom.xml" rel="self"/>
  <link href="http://pepegramming.site/"/>
- <updated>2024-08-16T16:03:39+03:00</updated>
+ <updated>2024-08-30T21:35:59+03:00</updated>
  <id>http://pepegramming.site</id>
  <author>
    <name>Anton Davydov</name>
    <email></email>
  </author>
 
+ 
+ <entry>
+   <title>Как уменьшить размер события в асинхронных коммуникациях</title>
+   <link href="http://pepegramming.site/questions/make-events-small/"/>
+   <updated>2024-08-30T00:00:00+03:00</updated>
+   <id>http://pepegramming.site/questions/make-events-small</id>
+   <content type="html">&lt;h2 id=&quot;вопрос&quot;&gt;Вопрос&lt;/h2&gt;
+
+&lt;div class=&quot;question-text&quot;&gt;
+  &lt;blockquote&gt;
+    &lt;p&gt;Привет!&lt;/p&gt;
+
+    &lt;p&gt;Вопрос: что делать если требуется чтоб в message bus были максимально короткие сообщения?&lt;/p&gt;
+  &lt;/blockquote&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Так как вопрос абстрактный, то можно выделить две ситуации, в которой необходимо «короткое» событие:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Хочу короткие сообщения, потому что так «принято»;&lt;/li&gt;
+  &lt;li&gt;Есть проблема с брокером/трафиком/деньгами, и нужно решение для уменьшения размера payload в событии. При этом, концептуально событие корректно;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Давайте рассмотрим каждый из вариантов.&lt;/p&gt;
+
+&lt;details class=&quot;collapse_block&quot;&gt;
+  &lt;summary class=&quot;collapse_block__title&quot;&gt;Заумь: душный кусок, который задает понятийный аппарат и который можно пропустить&lt;/summary&gt;
+
+  &lt;div class=&quot;collapse_block__content&quot;&gt;
+
+    &lt;p&gt;К сожалению, без духоты, в виде зауми, могут появиться додумки или недопонимания, поэтому лучше договориться на берегу.&lt;/p&gt;
+
+    &lt;p&gt;Дальше по тексту будут использоваться три термина связанных с событиями, поэтому давайте договоримся на берегу, что подразумевается под каждым из терминов.&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;strong&gt;Событие (event)&lt;/strong&gt; – факт того, что произошло в прошлом. Всегда именуется глаголом в прошедшем времени, причем безвозвратным. Например, если что-то покупается в интернет магазине, то событие будет “заказ оформлен”;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;strong&gt;Команда (command)&lt;/strong&gt; – действие которое кто-то должен выполнить, обозначаются глаголом в настоящем времени. Если вернуться к примеру с заказом, то “оформить заказ”, как действие, можно отправить асинхронно. Для команд, текст ниже также валиден;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;strong&gt;Payload&lt;/strong&gt; – кроме названия того, что произошло, нужен и контекст, который добавляет конкретной информации, что именно произошло. Т.е. если мы “оформили заказ”, то желательно знать что это за заказ (хотя бы его id), кто это сделал, когда, какие товары были в заказе, какая стоимость (общая и каждого товара) и так далее. Все это является контекстом события, который находится в payload-е события. Для команды аналогично;&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# Событие в общем виде можно представить так
+
+event ItemAddedToCart { # ItemAddedToCart - название события
+  id: int, # тут описываем payload
+  # ... 
+}
+
+# Команда выглядит так
+
+command AddItemToCart { # AddItemToCart - название команды, которую кто-то выполнит
+  id: int, # тут описываем payload
+  # ... 
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;strong&gt;Бизнес событие&lt;/strong&gt; – событие которое говорит о том, что какой-то бизнес процесс завершился с каким-то результатом. Если знакомы с EventStorming – оранжевый стикер с событием будет аналогом. Если знакомы с DDD – domain event близок по смыслу;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;strong&gt;Продьюсинг и консьюминг (producing/consuming)&lt;/strong&gt; – терминология из кафки (и аналогов). Producer отправляет события, consumer потребляет. В кролилке любят использовать publisher/subscriber терминологию, что одно и тоже. Но в ответе будет использоваться терминология из кафки;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;strong&gt;Брокер (message broker)&lt;/strong&gt; – очередь/распределенный лог/стриминг платформа используемый для передачи событий из A в B;&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;p&gt;Вот об уменьшении payload-а события и поговорим в контексте вопроса.&lt;/p&gt;
+
+  &lt;/div&gt;
+&lt;/details&gt;
+
+&lt;h2 id=&quot;хочу-короткие-сообщения-потому-что-так-принято&quot;&gt;Хочу короткие сообщения, потому что так «принято»&lt;/h2&gt;
+
+&lt;p&gt;Первое, с чего надо начинать, когда дело касается размера payload в событии – определиться с двумя концепциями: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;state (fact) vs delta (action) events&lt;/code&gt; и &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;event granularity&lt;/code&gt;. Чаще эти два понятия даются отдельно и не связывают между собой. Но сегодня особый случай – будем рассматривать концепции в связке.&lt;/p&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-30-make-events-small/fine-coarse-state-delta-matrix.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;«Матрица» связи state/delta и event granularity концепций, которую будем использовать дальше&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h3 id=&quot;state-fact-vs-delta-action-events&quot;&gt;State (fact) vs delta (action) events&lt;/h3&gt;
+
+&lt;p&gt;Существует два подхода к хранению состояния в событиях:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;State (or fact) event – хранит полное состояние агрегата/бизнес события на момент продьюсинга;&lt;/li&gt;
+  &lt;li&gt;Delta (or action) event – хранит только изменения которые произошли в событие на момент продьюсинга;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-30-make-events-small/state-vs-delta-events.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;Пример двух одинаковых событий: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ItemAddedToOrder&lt;/code&gt;. В delta событии показывается только то, что изменилось, в state – указывается весь «снапшот» &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;order&lt;/code&gt; агрегата&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;Дополнение:&lt;/strong&gt; считается, что событие не может быть наполовину state и на половину delta. Но в реальности встречал ситуации, когда передавался полный агрегат + изменения только вложенных данных. Поэтому считаю значения не бинарными в этом ответе.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;плюсы-и-минусы-state-events&quot;&gt;Плюсы и минусы state events&lt;/h4&gt;
+
+&lt;p&gt;&lt;strong&gt;Плюсы&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Так как не надо считать состояние из кучи delta событий (которые могут быть разбросаны по разным очередям/топикам), то можно пропустить прошлые события, чтобы получить текущий слепок состояния;&lt;/li&gt;
+  &lt;li&gt;Если меняется схема событий – проще исправить одно state событие, чем пачку delta;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Минусы&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Cобытие может оказаться слишком большим (наш случай);&lt;/li&gt;
+  &lt;li&gt;Не понятно что изменилось, если ордеринг событий нарушится. Из-за этого можно будет обновить новые данные на старые и получить не консистентный стейт;&lt;/li&gt;
+  &lt;li&gt;Если изменения частые, может быть действительно слишком много лишних данных об одном и том же;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;плюсы-и-минусы-delta-events&quot;&gt;Плюсы и минусы delta events&lt;/h4&gt;
+
+&lt;p&gt;&lt;strong&gt;Плюсы&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;События будут меньше по размеру, в отличии от state событий, так как там не будет ничего лишнего;&lt;/li&gt;
+  &lt;li&gt;Если изменения частые – можно выиграть в трафике и количестве данных, которые храняться на стороне консьюмера;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Минусы&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Исправление проблем со схемой событий может стать еще большей проблемой. Частный случай – решение проблемы GDPR и другие “удаления” данных могут быть проблемными;&lt;/li&gt;
+  &lt;li&gt;Придется следить за event ordering;&lt;/li&gt;
+  &lt;li&gt;Если для обработки события нужен полный агрегат (все данные агрегата) – придется хранить локальное состояние агрегата;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;event-granularity&quot;&gt;Event granularity&lt;/h3&gt;
+
+&lt;p&gt;Вторая концепция раскрывает идею state/delta событий, но в плоскости полезности и полноты события. Для этого вводятся понятия coarse и  fine событий.&lt;/p&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-30-make-events-small/fine-vs-coarse-events.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;Пример двух одинаковых событий с добавлением товара в корзину. В coarse событии слишком много не понятно зачем относящихся данных, fine событие слишком специфичное и мелкое&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h4 id=&quot;coarse-событие&quot;&gt;Coarse событие&lt;/h4&gt;
+
+&lt;p&gt;Такие события большие и общие (т.е. обо всем сразу), содержат дженерик нейминг и кучу данных не обязательных (и местами не нужных) для работы консьюмера.&lt;/p&gt;
+
+&lt;p&gt;Иногда встречаются ситуации, когда событие так себе называется и контекст того, что произошло, можно понять только через чтение данных. Из-за этого бизнес логика просачивается на сторону консьюмера.&lt;/p&gt;
+
+&lt;h4 id=&quot;fine-событие&quot;&gt;Fine событие&lt;/h4&gt;
+
+&lt;p&gt;Такие события слишком мелкие и специфичные. Чаще нормально называются, но слишком в них мало информации для работы бизнес логики&lt;/p&gt;
+
+&lt;p&gt;Считается, что такое событие не юзабельно без других событий, следовательно приходится их комбинировать и это может привести к проблемам, что потенциально может привести к проблемам с event ordering.&lt;/p&gt;
+
+&lt;h3 id=&quot;собираем-концепции-вместе&quot;&gt;Собираем концепции вместе&lt;/h3&gt;
+
+&lt;p&gt;Если соединить две концепции, то появляется пространство выбора, в котором можно определить как оптимальный размер события, так то, на сколько общим (generic) событие будет в системе.&lt;/p&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-30-make-events-small/fine-coarse-state-delta-matrix-event-size.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;Примерное описание того, какой размер события ожидать в каждом из мест «матрицы». Цветом показал ожидаемый размер события. Fine delta событие будет самым мелким, поэтому стикер зеленый&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;В таком ключе, вся работа над размером событий сводится к тому, что бы сначала сначала определяется какой вид события нужен: state или delta. После чего определяем проблему гранулярности события и решаем найденную проблему.&lt;/p&gt;
+
+&lt;p&gt;Благодаря этому можно выбирать размер события. Что приводит к тому, что каждое событие будет оптимально по размеру и контексту под заданные требования и ограничения. Благодаря чему можно отказаться от «моды»/советов на delta события без данных, просто потому что в компании Х используется такой подход по дефолту.&lt;/p&gt;
+
+&lt;p&gt;Но у такого подхода присутствует и минус: придется думать над каждым событием, что может привести к разногласиям в команде, либо же к проблемам, если разработчики не скиловые. Можно решить что хватит delta/fine события, а потом окажется, что не попали в требования. Из-за чего придется заниматься дорогой и сложной эволюцией схемы события.&lt;/p&gt;
+
+&lt;h2 id=&quot;событие-корректное-по-размеру-но-слишком-большое-для-системы&quot;&gt;Событие корректное по размеру, но слишком большое для системы&lt;/h2&gt;
+
+&lt;p&gt;К сожалению, использование концепции &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;state (fact) vs delta (action) events&lt;/code&gt; и &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;event granularity&lt;/code&gt; не спасает в 100% случаев от проблем с размером события. Возможна ситуация, когда необходим state event, который при этом должен быть coarse. Т.е. вообще никак не выбрать ничего другого. А размер события должен быть максимально небольшим ибо специфика брокера/нет денег на инфру/etc.&lt;/p&gt;
+
+&lt;p&gt;Чтобы решить эту проблему перечислю точечные подходы, которые разбиваются на две группы:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;уменьшаем payload сообщения с помощью паттернов *;&lt;/li&gt;
+  &lt;li&gt;увеличиваем допустимые размеры сообщения в брокере;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;* Для некоторых вариантов придется подумать о консистентности данных в payload, ибо не все варианты работают со strong consistency.&lt;/p&gt;
+
+&lt;h3 id=&quot;уменьшение-размера-сообщений-без-потери-гранулярности&quot;&gt;Уменьшение размера сообщений без потери гранулярности&lt;/h3&gt;
+
+&lt;h4 id=&quot;убрать-лишние-данные-в-ручную&quot;&gt;Убрать лишние данные в ручную&lt;/h4&gt;
+
+&lt;p&gt;Очевидное решение, пересекающее с концепциями из первой части ответа: берем событие, смотрим какие данные нужны в каждом консьюмере события, после чего, ковыряясь в payload, выкидываем лишние данные. Т.е. делаем событие больше fine чем coarse:&lt;/p&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-30-make-events-small/less-coarse-event.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;Может оказаться, что событие надо сделать не таким coarse, следовательно, по «матрице» оно опустится чуть ниже&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h4 id=&quot;event-notification&quot;&gt;Event notification&lt;/h4&gt;
+
+&lt;p&gt;Если получали смс «осторожно, будет шторм», а потом шли смотреть где шторм, когда и кого зацепит – значит знакомы с паттерном.&lt;/p&gt;
+
+&lt;p&gt;По сути, паттерн частный случай delta события. Идея такая: отправляем событие, что что-то произошло, но контекст просим получить с помощью синхронного вызова. Подход нужен в двух случаях: когда необходимо передать большое количество данных, либо когда нужно максимально консистеные данные получить в событии. В контексте ответа на вопрос интересен первый случай.&lt;/p&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-30-make-events-small/event-notification-example.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;Пример реализации event notification паттерна. Сначала отправляется событие с ссылкой на ресурс. После этого, консьюмер, делает запрос за данными и получает контекст&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;Подобным образом можно передавать аттачменты в событиях: кидаем файл в s3, получаем ссылку, а после ссылку передаем в событии, благодаря чему можно не грузить гигабайты видео и картинок в брокер.&lt;/p&gt;
+
+&lt;p&gt;Из минусов подхода – появляется дополнительный каплинг за счет синхронной связи, что влияет на reliability, availability и другие характеристики.&lt;/p&gt;
+
+&lt;h4 id=&quot;воспользоваться-бинарной-сериализацией&quot;&gt;Воспользоваться бинарной сериализацией&lt;/h4&gt;
+
+&lt;p&gt;Если удалять из схемы payload нечего, а использовать синхронный вызов не позволяют характеристики, можно ужать само сообщение. Для этого берем бинарный серелизатор и упаковываем payload. По итогу получаем ужатую строку, которая меньше на 25-50% чем оригинальный payload (больше данных - больше ужимает).&lt;/p&gt;
+
+&lt;p&gt;Из минусов - без десериализации человек такую бинарную строку быстро не прочитает, в отличии от human-readable форматов (json, xml, etc). Еще из минусов – придется думать как консьюмер поймет какую схему использовать для десерелизации (либо 1 событие на топик/очередь, либо название события в headers кафки прокидывать).&lt;/p&gt;
+
+&lt;p&gt;Популярные серелизаторы: &lt;a href=&quot;https://github.com/protocolbuffers/protobuf&quot;&gt;protobuf&lt;/a&gt; (в grpc используется), &lt;a href=&quot;https://github.com/apache/avro&quot;&gt;avro&lt;/a&gt;, &lt;a href=&quot;https://github.com/apache/thrift&quot;&gt;apache thrift&lt;/a&gt;. В некоторых языках реализованы решения из коробки, &lt;a href=&quot;https://www.erlang.org/doc/apps/erts/erl_ext_dist.html&quot;&gt;например в erlang&lt;/a&gt; (использовать только тем, кто контрибьютил в пакет).&lt;/p&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-30-make-events-small/avro-vs-protobuf-size-comparison.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;Разработчик решил проверить, что будет если &lt;a href=&quot;https://cristian-matei-toader.medium.com/compressing-a-year-of-reddit-with-apache-avro-and-google-protobuf-c9e40cf90444&quot;&gt;ужать датасет kaggle 2015 года от reddit&lt;/a&gt;. Скриншот выше – итоговый результат, который мало говорит о том, что лучше, но показывающий как можно уменьшить размер события&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h4 id=&quot;message-chunking&quot;&gt;Message chunking&lt;/h4&gt;
+
+&lt;p&gt;Если описанные выше варианты не подошли, можно воспользоваться идеей передачи больших данных в синхронных вызовах: поделить сообщение на чанки меньшего размера и вместо одного жирного события получить N мелких.&lt;/p&gt;
+
+&lt;p&gt;Из минусов – проблемы с strong consistency для payload события, плюс проблемы упаковки чанков в событие на стороне консьюмера.&lt;/p&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-30-make-events-small/message-chunking-example.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;Пример из вики apache pulsar. Идея в том, что событие разбивается на чанки (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;M1-C1&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;M1-C2&lt;/code&gt;), после чего консьюмер собирает из чанков исходное событие&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h4 id=&quot;передавать-часть-данных-в-других-событиях&quot;&gt;Передавать часть данных в других событиях&lt;/h4&gt;
+
+&lt;p&gt;На первый взгляд решение может показаться идентичным message chunking, но концепция чуть отличается.&lt;/p&gt;
+
+&lt;p&gt;Идея в том, что можно разделить связи между элементами в плоскости &lt;a href=&quot;https://en.wikipedia.org/wiki/Form,_fit_and_function&quot;&gt;system function и system form&lt;/a&gt;. Благодаря чему появится два вида связности: по данным (это form) и на уровне поведения (function). Это приводит к идее, что если присутствует событие, которое говорит о поведении, для обработки которого нужны данные, эти данные можно передать через system form связь.&lt;/p&gt;
+
+&lt;p&gt;Для определения system form можно воспользоваться &lt;a href=&quot;https://pepegramming.site/questions/data-model/&quot;&gt;концептуальной data model&lt;/a&gt;, а для определения system function – любой моделью, описывающей поведение, например EventStorming.&lt;/p&gt;
+
+&lt;h3 id=&quot;тюнинг-брокера&quot;&gt;Тюнинг брокера&lt;/h3&gt;
+
+&lt;p&gt;Сразу скажу – не эксперт в инфраструктуре, поэтому накину идей. Лучше идите к DevOps инженерам или админам (сам так делаю).&lt;/p&gt;
+
+&lt;p&gt;Как могу судить, тут два подхода: либо крутить конфиг брокера, либо использовать специфичные инструменты реализованные в брокере:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Если возникла проблема, что событие не влезает в брокер, то можно накрутить конфиг &lt;a href=&quot;https://stackoverflow.com/questions/21020347/how-can-i-send-large-messages-with-kafka-over-15mb&quot;&gt;кафки&lt;/a&gt; или &lt;a href=&quot;https://www.cloudamqp.com/blog/what-is-the-message-size-limit-in-rabbitmq.html&quot;&gt;кролика, но тут лимит в 128 мб&lt;/a&gt;. Для других брокеров думаю можно найти аналогичные настройки;&lt;/li&gt;
+  &lt;li&gt;Если используете кафку, советую посмотреть в сторону &lt;a href=&quot;https://www.confluent.io/blog/apache-kafka-message-compression/&quot;&gt;message compression&lt;/a&gt;. Подход сработает для xml, json и прочего, что легко компрессируется и содержит дубли. По сути, аналог серелизации из списка выше;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Знаете еще варианты? Пишите в комментариях к тг посту, соберем список, а я дополню эту часть ответа.&lt;/p&gt;
+
+&lt;h2 id=&quot;выводы&quot;&gt;Выводы&lt;/h2&gt;
+
+&lt;p&gt;Уменьшение объема payload события не тривиальная задача, которую в первую очередь лучше решать через &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;state (fact) vs delta (action) events&lt;/code&gt; и &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;event granularity&lt;/code&gt; концепции. Но даже так, возникают ситуации, когда приходится точечно исправлять ситуацию, с чем помогают как паттерны, так и прямой конфиг брокера (если возможен).&lt;/p&gt;
+
+&lt;p&gt;А чтобы собрать ответ в кучу, сделал decision flow диаграмму, которую сам использую, когда проектирую события, надеюсь поможет.&lt;/p&gt;
+
+&lt;figure class=&quot;image&quot;&gt;
+  &lt;img src=&quot;/public/images/questions/2024-08-30-make-events-small/event-size-decision-flow.jpg&quot; alt=&quot;dbml: code and visualisation&quot; /&gt;
+  &lt;figcaption&gt;&lt;p&gt;Флоу выбора решения, который использую, если дело касается размера payload события&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;Хотя, в идеале, лучше жить в мире, в котором денег много, а инструменты не ограничивают в размере событий.&lt;/p&gt;
+
+&lt;h2 id=&quot;ссылки&quot;&gt;Ссылки&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;[en]  &lt;a href=&quot;https://barryosull.com/blog/event-granularity-modelling-events-in-event-driven-applications/&quot;&gt;Статья, которая рассказывает о концепции event granularity с fine и coarse событиями&lt;/a&gt;. При этом, автор объясняет почему появляются те или иные виды событий события;&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;[en]  &lt;a href=&quot;https://developer.confluent.io/courses/event-design/fact-vs-delta-events/&quot;&gt;Статья о state и delta событиях&lt;/a&gt;. Текста много, но и объясняется куча нюансов;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;[en]  &lt;a href=&quot;https://www.funnel-labs.io/2022/08/26/data-serialization-apache-avro-vs-google-protobuf/&quot;&gt;Сравнение avro и protobuf серелизаторов&lt;/a&gt; между собой;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://dataintensive.net&quot;&gt;4 глава DDIA&lt;/a&gt; посвящена сериализации данных. Если не читали – рекомендую;&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;[en]  &lt;a href=&quot;https://cristian-matei-toader.medium.com/compressing-a-year-of-reddit-with-apache-avro-and-google-protobuf-c9e40cf90444&quot;&gt;Статья, в которой автор вдохновился DDIA и решил ужать датасет реддита&lt;/a&gt;, чтобы понять какой сериализатор лучше. Результат проверки найдете картинкой в ответе выше;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;[en]  Советы по работе с большими сообщениями, которые описаны в вики apache pulsar. &lt;a href=&quot;https://github.com/apache/pulsar/wiki/PIP-37:-Large-message-size-handling-in-Pulsar#option-2-producer-publish-marker-message-after-publishing-all-chunked-messages&quot;&gt;Message chunking – один из вариантов решения&lt;/a&gt;;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;[ru] Подробнее о разделении коммуникаций на поведение и данные (form, function) можно &lt;a href=&quot;https://f213.notion.site/dfa7f424ed8440d99a21c328cc8c5c65&quot;&gt;почитать в открытом уроке курса&lt;/a&gt;, по анализу систем, который сделал;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;[en] Автор дает &lt;a href=&quot;https://jcdubs.medium.com/aws-large-payload-pattern-e3e4c57d402d&quot;&gt;советы тем, кто использует aws инфраструктуру и хочет работать с большими событиями&lt;/a&gt;. Примеры кода на js;&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+ </entry>
  
  <entry>
    <title>Как слежу за большими проектами</title>
